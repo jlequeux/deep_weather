@@ -1,11 +1,13 @@
 from train_model import train_model
 
 params = {}
-params['data_file'] = 'Temperature_200_crop_100_poi_90-360.hdf5'
+params['data_file'] = 'Temperature_2000_crop_100_poi_90-360.hdf5'
 params['x_size'] = 100
 params['y_size'] = 100
 params['nb_epoch'] = 10
 params['btch_sz'] = 10
+params['save'] = True
+params['callbacks'] = None
 
 
 for i, j, k, l, m, n in zip((3, 3, 5),
@@ -22,7 +24,7 @@ for i, j, k, l, m, n in zip((3, 3, 5),
     params['feat_3'] = n
 
     for o, p, q, r in zip(('normal', 'glorot_normal', 'he_normal'),
-                          (0, 0, 0),
+                          (0, 0.2, 0),
                           ('No Batch Norm', 'No Batch Norm', 'No Batch Norm'),
                           ('relu', 'prelu', 'prelu')):
 
@@ -31,12 +33,12 @@ for i, j, k, l, m, n in zip((3, 3, 5),
         params['bn'] = q
         params['relu'] = r
 
-        for s, t, u in zip((512, 256, 128),
-                           (256, 128, 64),
-                           (1, 1, 1)):
+        for s, t, u in zip((256, 128),
+                           (128, 64),
+                           (1, 1)):
 
             params['dense1'] = s
             params['dense2'] = t
             params['dense3'] = u
 
-            train_model(params)
+        train_model(params)
