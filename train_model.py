@@ -2,7 +2,7 @@ import numpy as np
 import datetime
 import time
 from write_results import write_results_csv
-
+from evaluate_model import evaluate_model_accuracy
 from keras.layers.advanced_activations import PReLU
 from keras.layers.convolutional import MaxPooling2D, Convolution2D
 from keras.layers.core import Flatten, Dense, Activation, Dropout
@@ -14,6 +14,8 @@ import h5py
 
 
 def train_model(params):
+
+    print " --- START MODEL TRAINING --- "
 
     np.random.seed(1337)  # for reproducibility
     data_file = params['data_file']
@@ -34,6 +36,8 @@ def train_model(params):
     dense1 = params['dense1']
     dense2 = params['dense2']
     dense3 = params['dense3']
+    save = params['save']
+    model_callbacks = params['callbacks']
 
     print 'loading data...'
     dest = '/Users/jeremielequeux/Documents/Git/deep_weather/' \
@@ -45,7 +49,7 @@ def train_model(params):
     X_test = data['X_val'][...]
     Y_test = data['Y_val'][...]
 
-    print ('X_Train Shape:', X_train.shape)
+    print('X_Train Shape:', X_train.shape)
     print ('Y_Train Shape:', Y_train.shape)
     # /!\ with these shapes new version of Kerias needs
     # "image_dim_ordering": "th" in ~/.keras/keras.json
@@ -53,8 +57,6 @@ def train_model(params):
     print 'normalizing data...'
     mean = np.mean(X_train)
     std = 3*np.std(X_train)  # keep 3*std : normalize data btw -1 and 1
-    print 'mean: %f' % mean
-    print 'std: %f' % std
     X_train -= mean
     X_train /= std
 
@@ -67,6 +69,7 @@ def train_model(params):
     Y_test -= mean
     Y_test /= std
 
+    print "create model..."
     model = Sequential()
     # CNN Layer 1
     model.add(Convolution2D(feat_1, nb_col_1, nb_col_1,
@@ -120,6 +123,7 @@ def train_model(params):
 
     model.add(Dense(dense3, init=init_method))
 
+    print "compile model..."
     model.compile(loss='mean_squared_error',
                   optimizer='adam')
 
@@ -128,20 +132,34 @@ def train_model(params):
             '%Y-%m-%d %Hh%Mm%Ss')
 
     # Add TensorBoard CallBacks for analysis
-    tbCallBack = callbacks.TensorBoard(log_dir='./logs/'+date,
-                                       histogram_freq=1,
-                                       write_graph=True,
-                                       write_images=True)
+    if model_callbacks == 'tensorboard':
+        myCallBack = callbacks.TensorBoard(log_dir='./logs/'+date,
+                                           histogram_freq=1,
+                                           write_graph=True,
+                                           write_images=False)
+        # Train and Evaluate Model
+        print "Fit model with tensorboard..."
+        hist = model.fit(X_train, Y_train, batch_size=btch_sz,
+                         nb_epoch=nb_epoch,
+                         shuffle=True,
+                         callbacks=[myCallBack],
+                         validation_data=(X_test, Y_test))
+    else:
+        print "Fit model..."
+        hist = model.fit(X_train, Y_train, batch_size=btch_sz,
+                         nb_epoch=nb_epoch,
+                         shuffle=True,
+                         validation_data=(X_test, Y_test))
 
-    # Train and Evaluate Model
-    hist = model.fit(X_train, Y_train, batch_size=btch_sz,
-                     nb_epoch=nb_epoch,
-                     shuffle=True, callbacks=[tbCallBack])
+    print "evaluate model..."
     score = model.evaluate(X_test, Y_test)
     print('score: ', score)
 
-    # --- saving results in CSV ---#
-    fieldname = ['date', 'loss', 'score', 'epoch', 'batch',
+    # measure accuracy
+    accuracy = evaluate_model_accuracy(model, data, tolerance=1)
+
+    # saving results in CSV
+    fieldname = ['date', 'loss', 'score', 'accuracy', 'epoch', 'batch',
                  'train_samples', 'test_samples', 'image_size',
                  'data_loaded', 'init_method',
                  'features_1', 'row_col_1',
@@ -154,6 +172,7 @@ def train_model(params):
     results = {'date': date,
                'loss': hist.history['loss'][nb_epoch-1],
                'score': score,
+               'accuracy': accuracy,
                'epoch': nb_epoch,
                'batch': btch_sz,
                'train_samples': X_train.shape[0],
@@ -175,4 +194,17 @@ def train_model(params):
                }
 
     write_results_csv(result_path, fieldname, results)
+
+    # save model and features
+    if save:
+        model_file = './models/'+date+'.json'
+        weights_file = './weights/'+date+'.h5'
+
+        model_json = model.to_json()
+        with open(model_file, "w") as json_file:
+            json_file.write(model_json)
+
+        model.save_weights(weights_file)
+        print("Model saved on "+model_file)
+        print("Weights saved on "+weights_file)
     return
