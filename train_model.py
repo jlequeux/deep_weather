@@ -159,16 +159,10 @@ def train_model(params):
     accuracy = evaluate_model_accuracy(model, data, tolerance=1)
 
     # saving results in CSV
-    fieldname = ['date', 'loss', 'score', 'accuracy', 'epoch', 'batch',
-                 'train_samples', 'test_samples', 'image_size',
-                 'data_loaded', 'init_method',
-                 'features_1', 'row_col_1',
-                 'features_2', 'row_col_2',
-                 'features_3', 'row_col_3',
-                 'drop_out', 'dense1', 'dense2',
-                 'dense3', 'other'
-                 ]
-    result_path = './results/results.csv'
+    date2 = datetime.datetime.fromtimestamp(ts).strftime(
+            '%Y-%m-%d')
+
+    result_path = './results/results-'+date2+'.csv'
     results = {'date': date,
                'loss': hist.history['loss'][nb_epoch-1],
                'score': score,
@@ -193,7 +187,7 @@ def train_model(params):
                'other': "Max-Pooling 2*2 - "+relu+" - "+bn
                }
 
-    write_results_csv(result_path, fieldname, results)
+    write_results_csv(result_path, results.keys(), results)
 
     # save model and features
     if save:
