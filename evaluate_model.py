@@ -22,17 +22,11 @@ def evaluate_model_accuracy(model, data, tolerance):
     predictions_init = predictions*std
     predictions_init += mean
 
-    predict_ok = 0
-    predict_ko = 0
+    # both matrix needs to have the same shape
+    predictions_init = predictions_init.reshape(predictions_init.shape[0])
 
-    for i, j in zip(predictions_init, Y_test_init):
-        delta = abs(j-i)
-        if delta < tolerance:
-            predict_ok += 1
-        else:
-            predict_ko += 1
-
-    accuracy = float(predict_ok) / (predict_ok + predict_ko)
+    # calculate the purcentage of prediction within the tolerance
+    accuracy = np.mean(np.abs(predictions_init - Y_test_init) < tolerance)
     print "accuracy : %f %%" % (accuracy*100)
 
     return accuracy
