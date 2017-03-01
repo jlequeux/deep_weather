@@ -3,6 +3,7 @@ import datetime
 import time
 from write_results import write_results_csv
 from evaluate_model import evaluate_model_accuracy
+from evaluate_model import evaluate_model_tolerance
 from keras.layers.advanced_activations import PReLU
 from keras.layers.convolutional import MaxPooling2D, Convolution2D
 from keras.layers.core import Flatten, Dense, Activation, Dropout
@@ -38,6 +39,8 @@ def train_model(params):
     dense3 = params['dense3']
     save = params['save']
     model_callbacks = params['callbacks']
+    target_tolerance = params['target_tolerance']
+    target_accuracy = params['target_accuracy']
 
     print 'loading data...'
     dest = '/Users/jeremielequeux/Documents/Git/deep_weather/' \
@@ -156,7 +159,10 @@ def train_model(params):
     print('score: ', score)
 
     # measure accuracy
-    accuracy = evaluate_model_accuracy(model, data, tolerance=1)
+    accuracy = evaluate_model_accuracy(model, data, target_tolerance)
+
+    # measure tolerance base on target accuracy
+    tolerance = evaluate_model_tolerance(model, data, target_accuracy)
 
     # saving results in CSV
     date2 = datetime.datetime.fromtimestamp(ts).strftime(
@@ -167,6 +173,7 @@ def train_model(params):
                'loss': hist.history['loss'][nb_epoch-1],
                'score': score,
                'accuracy': accuracy,
+               'tolerance': tolerance,
                'epoch': nb_epoch,
                'batch': btch_sz,
                'train_samples': X_train.shape[0],
