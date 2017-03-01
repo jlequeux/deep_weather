@@ -27,7 +27,7 @@ def evaluate_model_accuracy(model, data, tolerance):
 
     # calculate the purcentage of prediction within the tolerance
     accuracy = np.mean(np.abs(predictions_init - Y_test_init) < tolerance)
-    print "accuracy : %f %%" % (accuracy*100)
+    print('iaccuracy : %f %%' % (accuracy*100))
 
     return accuracy
 
@@ -65,5 +65,5 @@ def evaluate_model_tolerance(model, data, target_accuracy):
             tolerance = tol
             break
 
-    print "tolerance : %f " % tolerance
+    print('tolerance : %f ' % tolerance)
     return tolerance
