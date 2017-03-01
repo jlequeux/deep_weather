@@ -21,5 +21,7 @@ params['dense2'] = 128
 params['dense3'] = 1
 params['save'] = False
 params['callbacks'] = 'tensorboard'
+params['target_tolerance'] = 1
+params['target_accuracy'] = 0.95
 
 train_model(params)
