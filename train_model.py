@@ -206,6 +206,6 @@ def train_model(params):
             json_file.write(model_json)
 
         model.save_weights(weights_file)
-        print 'Model saved on %s' % model_file
-        print 'Weights saved on %s' % weights_file
+        print('Model saved on %s' % model_file)
+        print('Weights saved on %s' % weights_file)
     return
