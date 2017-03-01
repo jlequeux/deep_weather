@@ -3,9 +3,6 @@ import os
 
 
 def write_results_csv(filename, fieldname, results):
-    print filename
-    print fieldname
-    print results
 
     if not os.path.exists(filename):
         csvfile = open(filename, 'wb')
@@ -16,6 +13,6 @@ def write_results_csv(filename, fieldname, results):
         writer = csv.DictWriter(csvfile, fieldnames=fieldname)
 
     writer.writerow(results)
-
+    print('DONE - Results succesfully written in %s' % filename)
     csvfile.close()
     return
