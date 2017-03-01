@@ -16,7 +16,7 @@ import h5py
 
 def train_model(params):
 
-    print " --- START MODEL TRAINING --- "
+    print(' --- START MODEL TRAINING --- ')
 
     np.random.seed(1337)  # for reproducibility
     data_file = params['data_file']
@@ -42,7 +42,7 @@ def train_model(params):
     target_tolerance = params['target_tolerance']
     target_accuracy = params['target_accuracy']
 
-    print 'loading data...'
+    print('loading data...')
     dest = '/Users/jeremielequeux/Documents/Git/deep_weather/' \
            'loaded_data/'+data_file
     data = h5py.File(dest)
@@ -57,22 +57,22 @@ def train_model(params):
     # /!\ with these shapes new version of Kerias needs
     # "image_dim_ordering": "th" in ~/.keras/keras.json
 
-    print 'normalizing data...'
+    print('normalizing data...')
     mean = np.mean(X_train)
-    std = 3*np.std(X_train)  # keep 3*std : normalize data btw -1 and 1
+    norm_val = 3*np.std(X_train)  # keep 3*std : normalize data btw -1 and 1
     X_train -= mean
-    X_train /= std
+    X_train /= norm_val
 
     Y_train -= mean
-    Y_train /= std
+    Y_train /= norm_val
 
     X_test -= mean
-    X_test /= std
+    X_test /= norm_val
 
     Y_test -= mean
-    Y_test /= std
+    Y_test /= norm_val
 
-    print "create model..."
+    print('create model...')
     model = Sequential()
     # CNN Layer 1
     model.add(Convolution2D(feat_1, nb_col_1, nb_col_1,
@@ -126,7 +126,7 @@ def train_model(params):
 
     model.add(Dense(dense3, init=init_method))
 
-    print "compile model..."
+    print('compile model...')
     model.compile(loss='mean_squared_error',
                   optimizer='adam')
 
@@ -136,25 +136,25 @@ def train_model(params):
 
     # Add TensorBoard CallBacks for analysis
     if model_callbacks == 'tensorboard':
-        myCallBack = callbacks.TensorBoard(log_dir='./logs/'+date,
-                                           histogram_freq=1,
-                                           write_graph=True,
-                                           write_images=False)
+        tf_callback = callbacks.TensorBoard(log_dir='./logs/'+date,
+                                            histogram_freq=1,
+                                            write_graph=True,
+                                            write_images=False)
         # Train and Evaluate Model
-        print "Fit model with tensorboard..."
+        print('Fit model with tensorboard...')
         hist = model.fit(X_train, Y_train, batch_size=btch_sz,
                          nb_epoch=nb_epoch,
                          shuffle=True,
-                         callbacks=[myCallBack],
+                         callbacks=[tf_callback],
                          validation_data=(X_test, Y_test))
     else:
-        print "Fit model..."
+        print('Fit model...')
         hist = model.fit(X_train, Y_train, batch_size=btch_sz,
                          nb_epoch=nb_epoch,
                          shuffle=True,
                          validation_data=(X_test, Y_test))
 
-    print "evaluate model..."
+    print('evaluate model...')
     score = model.evaluate(X_test, Y_test)
     print('score: ', score)
 
@@ -191,7 +191,7 @@ def train_model(params):
                'dense1': dense1,
                'dense2': dense2,
                'dense3': dense3,
-               'other': "Max-Pooling 2*2 - "+relu+" - "+bn
+               'other': 'Max-Pooling 2*2 - '+relu+' - '+bn
                }
 
     write_results_csv(result_path, results.keys(), results)
@@ -202,10 +202,10 @@ def train_model(params):
         weights_file = './weights/'+date+'.h5'
 
         model_json = model.to_json()
-        with open(model_file, "w") as json_file:
+        with open(model_file, 'w') as json_file:
             json_file.write(model_json)
 
         model.save_weights(weights_file)
-        print("Model saved on "+model_file)
-        print("Weights saved on "+weights_file)
+        print 'Model saved on %s' % model_file
+        print 'Weights saved on %s' % weights_file
     return
