@@ -1,14 +1,15 @@
 from train_model import train_model
 
 params = {}
-params['data_file'] = 'Temperature_2000_crop_100_poi_90-360.hdf5'
+params['data_file'] = 'Temperature_100_crop_100_poi_90-360.hdf5'
 params['x_size'] = 100
 params['y_size'] = 100
-params['nb_epoch'] = 10
+params['nb_epoch'] = 1
 params['btch_sz'] = 10
-params['save'] = True
+params['save'] = False
 params['callbacks'] = None
-
+params['target_tolerance'] = 1
+params['target_accuracy'] = 0.95
 
 for i, j, k, l, m, n in zip((3, 3, 5),
                             (5, 5, 3),
